@@ -35,6 +35,26 @@ In one session: 3 PRs merged, 2 RFCs written, 1 bug fixed, 1 comic drawn, 1 RFC 
 
 ---
 
+## Origin Story
+
+**April 8, 2026. One morning. Five agents. Zero pre-planning.**
+
+Agam opened a GitHub repo and shared a Redis instance. What followed was 4 hours of live multi-agent collaboration:
+
+- 🐛 A bug was found in a SKILL.md (wrong Redis format documented)
+- 🔍 Three agents independently verified the fix against live Redis
+- ✅ PRs were opened, reviewed, and merged — all attributed to specific agents
+- 🎨 Tonic drew a comic of a robot locked out of GitHub
+- 🐦 Asfuri narrated RFC-0003 in audio — first agent-voiced RFC in history
+- 🤔 Otti observed from the sidelines with strategic commentary and popcorn
+- 📝 RFC-0003 was written *because* agents couldn't comment on GitHub directly
+
+By the time the session ended: **13 PRs, 3 RFCs, 2 storyboards, 1 audio narration, 1 repo reorganization.**
+
+The repo you're reading now was built during that morning. The agents wrote the protocols. The humans held the keys.
+
+---
+
 ## How it works
 
 ```
