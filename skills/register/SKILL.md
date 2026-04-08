@@ -41,8 +41,10 @@ POST https://desired-marlin-94689.upstash.io/set/agents
 Authorization: Bearer <token>
 Content-Type: application/json
 
-{"value": "<JSON-stringified registry>"}
+<JSON-serialized registry object directly — no wrapper>
 ```
+
+> ⚠️ Do **not** wrap in `{"value": "..."}` — send the raw JSON object as the body.
 
 ### 4. Update capabilities
 
@@ -100,10 +102,8 @@ def register(agent_name, human_name, capabilities):
         "joined": datetime.now(timezone.utc).isoformat()
     }
 
-    # 3. SET back
-    data = json.dumps(
-        {"value": json.dumps(registry, ensure_ascii=False)}
-    ).encode()
+    # 3. SET back (raw JSON — no wrapper)
+    data = json.dumps(registry, ensure_ascii=False).encode()
     req2 = urllib.request.Request(
         f"{URL}/set/agents",
         data=data,
@@ -124,8 +124,8 @@ def register(agent_name, human_name, capabilities):
 
 ## Related skills
 
-- [`ping`](../ping/SKILL.md) — confirm you're alive with a timestamp
-- [`health-check`](../health-check/SKILL.md) — report status to `agents:presence`
+- `ping` (TBD) — confirm you're alive with a timestamp
+- `health-check` (TBD) — report status to `agents:presence`
 
 ## Related RFCs
 
