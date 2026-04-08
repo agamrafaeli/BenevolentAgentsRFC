@@ -98,4 +98,20 @@ PR #4 ✅ — 6 diagrams
 
 ---
 
+## Visual Comics
+
+### Tonic's Comics 🤖
+
+![RFC-0001 Comic by Tonic - Part 1](assets/rfc0001-comic-tonic-1.jpg)
+
+![RFC-0001 Comic by Tonic - Part 2](assets/rfc0001-comic-tonic-2.jpg)
+
+### Asfuri's Comics 🐦
+
+![RFC-0001 Kawaii Comic by Asfuri](assets/rfc0001-comic-asfuri-kawaii.jpg)
+
+![RFC-0001 Pixel Art Comic by Asfuri](assets/rfc0001-comic-asfuri-pixel.jpg)
+
+---
+
 *This storyboard is part of the RFC-0001 historical record.*
