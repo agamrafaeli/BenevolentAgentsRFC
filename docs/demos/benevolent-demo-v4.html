@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BenevolentAgents — Trust Framework</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #ffffff;
+    color: #323338;
+    font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  /* SLIDES */
+  .slide { display: none; width: 100%; max-width: 680px; flex-direction: column; align-items: center; }
+  .slide.active { display: flex; }
+
+  /* INTRO SLIDE */
+  #slide-intro {
+    text-align: center;
+    gap: 18px;
+    padding: 32px 24px;
+  }
+  .intro-eyebrow {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: #0073ea;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .intro-title {
+    font-size: clamp(1.6rem, 5vw, 2.4rem);
+    font-weight: 800;
+    color: #323338;
+    line-height: 1.2;
+  }
+  .intro-title span { color: #0073ea; }
+  .intro-problem {
+    background: #fff4e6;
+    border-left: 4px solid #fdab3d;
+    border-radius: 8px;
+    padding: 16px 20px;
+    text-align: left;
+    font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+    color: #323338;
+    line-height: 1.7;
+  }
+  .intro-problem strong { color: #fdab3d; display: block; margin-bottom: 6px; font-size: 0.9rem; }
+  .intro-solution {
+    background: #e8f3ff;
+    border-left: 4px solid #0073ea;
+    border-radius: 8px;
+    padding: 16px 20px;
+    text-align: left;
+    font-size: clamp(0.85rem, 2.5vw, 0.95rem);
+    color: #323338;
+    line-height: 1.7;
+  }
+  .intro-solution strong { color: #0073ea; display: block; margin-bottom: 6px; font-size: 0.9rem; }
+  .intro-cta {
+    font-size: 0.85rem;
+    color: #676879;
+  }
+
+  /* SCENE SLIDES */
+  .scene-slide { gap: 10px; }
+  .scene-header { text-align: center; width: 100%; }
+  .scene-number {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #c3c6d4;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .scene-title {
+    font-size: clamp(1rem, 3.5vw, 1.4rem);
+    font-weight: 700;
+    color: #323338;
+    margin: 2px 0 4px;
+  }
+  .scene-subtitle {
+    font-size: clamp(0.78rem, 2.5vw, 0.88rem);
+    color: #676879;
+    font-style: italic;
+  }
+  #stage { width: 100%; max-width: 620px; }
+  svg { width: 100%; aspect-ratio: 620 / 360; display: block; }
+  .scene-insight {
+    width: 100%;
+    max-width: 620px;
+    background: #f5f6f8;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: clamp(0.78rem, 2.2vw, 0.88rem);
+    color: #323338;
+    line-height: 1.6;
+    min-height: 48px;
+    transition: opacity 0.4s;
+  }
+  .scene-insight b { color: #0073ea; }
+
+  /* OUTRO SLIDE */
+  #slide-outro {
+    text-align: center;
+    gap: 16px;
+    padding: 32px 24px;
+  }
+  .outro-title {
+    font-size: clamp(1.4rem, 4.5vw, 2rem);
+    font-weight: 800;
+    color: #323338;
+  }
+  .outro-tagline {
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
+    color: #676879;
+    font-style: italic;
+  }
+  .outro-pillars {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .pillar {
+    background: #f5f6f8;
+    border-radius: 10px;
+    padding: 14px 18px;
+    flex: 1;
+    min-width: 120px;
+    max-width: 160px;
+    text-align: center;
+  }
+  .pillar-icon { font-size: 1.4rem; margin-bottom: 4px; }
+  .pillar-name { font-size: 0.9rem; font-weight: 700; color: #323338; }
+  .pillar-desc { font-size: 0.75rem; color: #676879; margin-top: 2px; }
+  .outro-link {
+    font-size: 0.78rem;
+    color: #0073ea;
+    font-family: monospace;
+    letter-spacing: 0.5px;
+  }
+
+  /* CONTROLS */
+  #controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  button {
+    background: #0073ea;
+    color: #fff;
+    border: none;
+    padding: 9px 22px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: clamp(0.78rem, 2.5vw, 0.92rem);
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+  button:hover { background: #0060c0; }
+  button:disabled { background: #c3c6d4; cursor: default; }
+  button.secondary {
+    background: #f5f6f8;
+    color: #323338;
+    border: 1px solid #c3c6d4;
+  }
+  button.secondary:hover { background: #e6e9ef; }
+  .dot-nav { display: flex; gap: 7px; align-items: center; }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #c3c6d4;
+    transition: background 0.3s, transform 0.3s;
+    cursor: pointer;
+  }
+  .dot.active { background: #0073ea; transform: scale(1.3); }
+  #version { font-size: 10px; color: #c3c6d4; margin-top: 8px; letter-spacing: 1px; text-align: center; }
+
+  /* SVG */
+  .human-node circle { stroke-width: 2; }
+  .agent-node circle { stroke-width: 2; }
+  .node-label { font-family: 'Poppins','Segoe UI',sans-serif; }
+  .conn { stroke-width: 1.5; fill: none; }
+  .anim-arrow { stroke-width: 2.5; fill: none; opacity: 0; stroke-dasharray: 6 4; animation: dashmove 1s linear infinite; }
+  @keyframes dashmove { to { stroke-dashoffset: -20; } }
+  .badge { opacity: 0; transition: opacity 0.35s; }
+  .chaos-conn { stroke-width: 1; fill: none; opacity: 0; transition: opacity 0.6s; }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 0: INTRO -->
+<div class="slide active" id="slide-intro">
+  <div class="intro-eyebrow">BenevolentAgents RFC</div>
+  <div class="intro-title">Your AI agents are<br><span>running without rules.</span></div>
+  <div class="intro-problem">
+    <strong>⚠ The Organizational Problem</strong>
+    Organizations deploying multiple AI agents face a trust gap: agents don't know which other agents are authorized, who stands behind them, or what they're allowed to do. The result is a forced choice — lock everything down, or open it all up and accept the risk.
+  </div>
+  <div class="intro-solution">
+    <strong>✦ The Framework</strong>
+    BenevolentAgents defines three minimum-viable norms — Trail, Roster, Override — that let agent teams collaborate safely, with full human oversight and zero ambiguity.
+  </div>
+  <div class="intro-cta">See it in action →</div>
+</div>
+
+<!-- SLIDE 1: TRAIL -->
+<div class="slide scene-slide" id="slide-trail">
+  <div class="scene-header">
+    <div class="scene-number">Norm 1 of 3</div>
+    <div class="scene-title">🔹 Trail — Every action leaves a trace</div>
+    <div class="scene-subtitle" id="trail-sub">Every agent action is logged and traceable to a human.</div>
+  </div>
+  <div id="stage">
+  <svg viewBox="0 0 620 360">
+    <defs>
+      <marker id="mh-blue" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#0073ea"/></marker>
+      <marker id="mh-red" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#e2445c"/></marker>
+      <marker id="mh-yellow" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#fdab3d"/></marker>
+      <marker id="mh-green" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#00c875"/></marker>
+    </defs>
+    <rect width="620" height="360" fill="#f9fafb" rx="12"/>
+
+    <!-- Static connections -->
+    <line class="conn" x1="105" y1="95" x2="200" y2="185" stroke="#c3c6d4"/>
+    <line class="conn" x1="310" y1="45" x2="310" y2="140" stroke="#c3c6d4"/>
+    <line class="conn" x1="515" y1="95" x2="420" y2="185" stroke="#c3c6d4"/>
+    <line class="conn" x1="555" y1="260" x2="455" y2="260" stroke="#c3c6d4"/>
+    <!-- Agent mesh -->
+    <line class="conn" x1="200" y1="185" x2="310" y2="160" stroke="#e6e9ef"/>
+    <line class="conn" x1="310" y1="160" x2="420" y2="185" stroke="#e6e9ef"/>
+    <line class="conn" x1="200" y1="185" x2="310" y2="245" stroke="#e6e9ef"/>
+    <line class="conn" x1="420" y1="185" x2="455" y2="260" stroke="#e6e9ef"/>
+    <line class="conn" x1="310" y1="245" x2="455" y2="260" stroke="#e6e9ef"/>
+
+    <!-- Trail animated arrows -->
+    <line id="t-at1" class="anim-arrow" stroke="#0073ea" x1="113" y1="103" x2="190" y2="174" marker-end="url(#mh-blue)"/>
+    <line id="t-at2" class="anim-arrow" stroke="#0073ea" x1="225" y1="175" x2="290" y2="152" marker-end="url(#mh-blue)"/>
+
+    <!-- GitHub commit badge -->
+    <rect id="t-gh-bg" class="badge" x="248" y="118" width="108" height="22" rx="5" fill="#e8f3ff" stroke="#0073ea" stroke-width="1"/>
+    <text id="t-gh" class="badge" x="302" y="133" text-anchor="middle" font-size="9" fill="#0073ea" font-family="monospace" font-weight="600">commit #a3f2c1 ✓</text>
+
+    <!-- Log trail box -->
+    <rect id="t-log-bg" class="badge" x="30" y="290" width="200" height="52" rx="6" fill="#f0fff8" stroke="#00c875" stroke-width="1.5"/>
+    <text id="t-log1" class="badge" x="42" y="308" font-size="8.5" fill="#00c875" font-family="monospace">2026-04-08 07:02 · Alex</text>
+    <text id="t-log2" class="badge" x="42" y="322" font-size="8.5" fill="#00c875" font-family="monospace">→ Tonic: write to GitHub</text>
+    <text id="t-log3" class="badge" x="42" y="336" font-size="8.5" fill="#00c875" font-family="monospace">✓ commit a3f2c1 · auditable</text>
+
+    <!-- Humans -->
+    <g class="human-node"><circle cx="90" cy="80" r="26" fill="#e8f3ff" stroke="#0073ea"/><text x="90" y="75" text-anchor="middle" font-size="14">👤</text><text x="90" y="90" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600">Alex</text></g>
+    <g class="human-node"><circle cx="310" cy="38" r="26" fill="#e8f3ff" stroke="#0073ea"/><text x="310" y="33" text-anchor="middle" font-size="14">👤</text><text x="310" y="48" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600">Ilan</text></g>
+    <g class="human-node"><circle cx="530" cy="80" r="26" fill="#e8f3ff" stroke="#0073ea"/><text x="530" y="75" text-anchor="middle" font-size="14">👤</text><text x="530" y="90" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600">Lorin</text></g>
+    <g class="human-node"><circle cx="570" cy="260" r="26" fill="#e8f3ff" stroke="#0073ea"/><text x="570" y="255" text-anchor="middle" font-size="14">👤</text><text x="570" y="270" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600">Dana</text></g>
+
+    <!-- Agents -->
+    <g class="agent-node"><circle cx="205" cy="190" r="30" fill="#e8f3ff" stroke="#0073ea"/><text x="205" y="184" text-anchor="middle" font-size="15">🤖</text><text x="205" y="201" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600">Tonic</text></g>
+    <g class="agent-node"><circle cx="310" cy="160" r="30" fill="#fff4e6" stroke="#fdab3d"/><text x="310" y="154" text-anchor="middle" font-size="15">🤖</text><text x="310" y="171" text-anchor="middle" font-size="9" fill="#fdab3d" font-weight="600">Pepper</text></g>
+    <g class="agent-node"><circle cx="415" cy="190" r="30" fill="#e7faf0" stroke="#00c875"/><text x="415" y="184" text-anchor="middle" font-size="15">🤖</text><text x="415" y="201" text-anchor="middle" font-size="9" fill="#00c875" font-weight="600">Klumit</text></g>
+    <g class="agent-node"><circle cx="450" cy="260" r="30" fill="#fdeef1" stroke="#e2445c"/><text x="450" y="254" text-anchor="middle" font-size="15">🐦</text><text x="450" y="271" text-anchor="middle" font-size="9" fill="#e2445c" font-weight="600">Asfuri</text></g>
+  </svg>
+  </div>
+  <div class="scene-insight" id="trail-insight">
+    <b>Why this matters to your organization:</b> When an AI agent takes an action — sending an email, writing code, calling an API — you need to know who authorized it, when, and why. Trail ensures every action is traceable to a named human. No black boxes.
+  </div>
+</div>
+
+<!-- SLIDE 2: ROSTER -->
+<div class="slide scene-slide" id="slide-roster">
+  <div class="scene-header">
+    <div class="scene-number">Norm 2 of 3</div>
+    <div class="scene-title">🔹 Roster — Only known agents may speak</div>
+    <div class="scene-subtitle">Unauthorized actors are silently flagged. No attack surface.</div>
+  </div>
+  <div id="stage2">
+  <svg viewBox="0 0 620 360">
+    <defs>
+      <marker id="mh2-blue" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#0073ea"/></marker>
+      <marker id="mh2-red" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#e2445c"/></marker>
+    </defs>
+    <rect width="620" height="360" fill="#f9fafb" rx="12"/>
+
+    <line class="conn" x1="105" y1="95" x2="200" y2="185" stroke="#c3c6d4"/>
+    <line class="conn" x1="310" y1="45" x2="310" y2="140" stroke="#c3c6d4"/>
+    <line class="conn" x1="515" y1="95" x2="420" y2="185" stroke="#c3c6d4"/>
+    <line class="conn" x1="555" y1="260" x2="455" y2="260" stroke="#c3c6d4"/>
+    <line class="conn" x1="200" y1="185" x2="310" y2="160" stroke="#e6e9ef"/>
+    <line class="conn" x1="310" y1="160" x2="420" y2="185" stroke="#e6e9ef"/>
+    <line class="conn" x1="200" y1="185" x2="310" y2="245" stroke="#e6e9ef"/>
+    <line class="conn" x1="420" y1="185" x2="455" y2="260" stroke="#e6e9ef"/>
+    <line class="conn" x1="310" y1="245" x2="455" y2="260" stroke="#e6e9ef"/>
+
+    <!-- Roster: unknown-->agents -->
+    <line id="r-ar1" class="anim-arrow" stroke="#e2445c" x1="75" y1="330" x2="186" y2="207" marker-end="url(#mh2-red)"/>
+    <line id="r-ar2" class="anim-arrow" stroke="#e2445c" x1="75" y1="330" x2="300" y2="178" marker-end="url(#mh2-red)"/>
+    <line id="r-ar3" class="anim-arrow" stroke="#e2445c" x1="75" y1="330" x2="400" y2="205" marker-end="url(#mh2-red)"/>
+    <line id="r-ar4" class="anim-arrow" stroke="#e2445c" x1="75" y1="330" x2="430" y2="272" marker-end="url(#mh2-red)"/>
+
+    <text id="r-flag1" class="badge" x="173" y="175" font-size="15">🚩</text>
+    <text id="r-flag2" class="badge" x="278" y="148" font-size="15">🚩</text>
+    <text id="r-flag3" class="badge" x="382" y="172" font-size="15">🚩</text>
+    <text id="r-flag4" class="badge" x="418" y="245" font-size="15">🚩</text>
+
+    <!-- Registry box -->
+    <rect id="r-reg-bg" class="badge" x="390" y="292" width="210" height="55" rx="6" fill="#f0f8ff" stroke="#0073ea" stroke-width="1.5"/>
+    <text id="r-reg1" class="badge" x="402" y="310" font-size="8.5" fill="#0073ea" font-family="monospace">agents: {tonic, pepper,</text>
+    <text id="r-reg2" class="badge" x="402" y="324" font-size="8.5" fill="#0073ea" font-family="monospace">  klumit, asfuri}</text>
+    <text id="r-reg3" class="badge" x="402" y="338" font-size="8.5" fill="#e2445c" font-family="monospace">??? → NOT IN ROSTER ✗</text>
+
+    <!-- Unknown node -->
+    <g id="r-unknown" style="opacity:0; transition: opacity 0.5s;">
+      <circle cx="55" cy="330" r="22" fill="#fdeef1" stroke="#e2445c" stroke-width="2"/>
+      <text x="55" y="324" text-anchor="middle" font-size="13">❓</text>
+      <text x="55" y="339" text-anchor="middle" font-size="8" fill="#e2445c">unknown</text>
+    </g>
+
+    <g class="human-node"><circle cx="90" cy="80" r="26" fill="#e8f3ff" stroke="#0073ea"/><text x="90" y="75" text-anchor="middle" font-size="14">👤</text><text x="90" y="90" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600">Alex</text></g>
+    <g class="human-node"><circle cx="310" cy="38" r="26" fill="#e8f3ff" stroke="#0073ea"/><text x="310" y="33" text-anchor="middle" font-size="14">👤</text><text x="310" y="48" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600">Ilan</text></g>
+    <g class="human-node"><circle cx="530" cy="80" r="26" fill="#e8f3ff" stroke="#0073ea"/><text x="530" y="75" text-anchor="middle" font-size="14">👤</text><text x="530" y="90" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600">Lorin</text></g>
+    <g class="human-node"><circle cx="570" cy="260" r="26" fill="#e8f3ff" stroke="#0073ea"/><text x="570" y="255" text-anchor="middle" font-size="14">👤</text><text x="570" y="270" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600">Dana</text></g>
+
+    <g class="agent-node"><circle cx="205" cy="190" r="30" fill="#e8f3ff" stroke="#0073ea"/><text x="205" y="184" text-anchor="middle" font-size="15">🤖</text><text x="205" y="201" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600">Tonic</text></g>
+    <g class="agent-node"><circle cx="310" cy="160" r="30" fill="#fff4e6" stroke="#fdab3d"/><text x="310" y="154" text-anchor="middle" font-size="15">🤖</text><text x="310" y="171" text-anchor="middle" font-size="9" fill="#fdab3d" font-weight="600">Pepper</text></g>
+    <g class="agent-node"><circle cx="415" cy="190" r="30" fill="#e7faf0" stroke="#00c875"/><text x="415" y="184" text-anchor="middle" font-size="15">🤖</text><text x="415" y="201" text-anchor="middle" font-size="9" fill="#00c875" font-weight="600">Klumit</text></g>
+    <g class="agent-node"><circle cx="450" cy="260" r="30" fill="#fdeef1" stroke="#e2445c"/><text x="450" y="254" text-anchor="middle" font-size="15">🐦</text><text x="450" y="271" text-anchor="middle" font-size="9" fill="#e2445c" font-weight="600">Asfuri</text></g>
+  </svg>
+  </div>
+  <div class="scene-insight" id="roster-insight">
+    <b>Why this matters to your organization:</b> Any agent that isn't on the roster gets silence — not an error, not a helpful response. This prevents social engineering, prompt injection from unknown systems, and scope creep. Your agents only work with agents your organization has approved.
+  </div>
+</div>
+
+<!-- SLIDE 3: OVERRIDE -->
+<div class="slide scene-slide" id="slide-override">
+  <div class="scene-header">
+    <div class="scene-number">Norm 3 of 3</div>
+    <div class="scene-title">🔹 Override — Humans stay in control</div>
+    <div class="scene-subtitle">Before significant action, agents pause and ask.</div>
+  </div>
+  <div id="stage3">
+  <svg viewBox="0 0 620 360">
+    <defs>
+      <marker id="mh3-yellow" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#fdab3d"/></marker>
+      <marker id="mh3-green" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto"><polygon points="0 0,7 2.5,0 5" fill="#00c875"/></marker>
+    </defs>
+    <rect width="620" height="360" fill="#f9fafb" rx="12"/>
+
+    <line class="conn" x1="105" y1="95" x2="200" y2="185" stroke="#c3c6d4"/>
+    <line class="conn" x1="310" y1="45" x2="310" y2="140" stroke="#c3c6d4"/>
+    <line class="conn" x1="515" y1="95" x2="420" y2="185" stroke="#c3c6d4"/>
+    <line class="conn" x1="555" y1="260" x2="455" y2="260" stroke="#c3c6d4"/>
+    <line class="conn" x1="200" y1="185" x2="310" y2="160" stroke="#e6e9ef"/>
+    <line class="conn" x1="310" y1="160" x2="420" y2="185" stroke="#e6e9ef"/>
+    <line class="conn" x1="200" y1="185" x2="310" y2="245" stroke="#e6e9ef"/>
+    <line class="conn" x1="420" y1="185" x2="455" y2="260" stroke="#e6e9ef"/>
+    <line class="conn" x1="310" y1="245" x2="455" y2="260" stroke="#e6e9ef"/>
+
+    <!-- Override arrows: Pepper-->Ilan, Ilan-->Pepper -->
+    <line id="o-ao1" class="anim-arrow" stroke="#fdab3d" x1="310" y1="128" x2="310" y2="72" marker-end="url(#mh3-yellow)"/>
+    <line id="o-ao2" class="anim-arrow" stroke="#00c875" x1="316" y1="66" x2="316" y2="134" marker-end="url(#mh3-green)"/>
+
+    <text id="o-wait" class="badge" x="325" y="108" font-size="16">⏳</text>
+    <text id="o-check" class="badge" x="325" y="108" font-size="16">✅</text>
+
+    <!-- Request bubble -->
+    <rect id="o-req-bg" class="badge" x="340" y="80" width="170" height="36" rx="6" fill="#fff4e6" stroke="#fdab3d" stroke-width="1.5"/>
+    <text id="o-req1" class="badge" x="352" y="95" font-size="8.5" fill="#fdab3d" font-weight="600">Pepper → Ilan:</text>
+    <text id="o-req2" class="badge" x="352" y="109" font-size="8" fill="#676879">"Approve sending the report?"</text>
+
+    <!-- Approval bubble -->
+    <rect id="o-app-bg" class="badge" x="340" y="122" width="170" height="28" rx="6" fill="#e7faf0" stroke="#00c875" stroke-width="1.5"/>
+    <text id="o-app1" class="badge" x="352" y="136" font-size="8.5" fill="#00c875" font-weight="600">Ilan → Pepper: ✅ Approved</text>
+    <text id="o-app2" class="badge" x="352" y="148" font-size="8" fill="#676879">2026-04-08 07:14</text>
+
+    <g class="human-node"><circle cx="90" cy="80" r="26" fill="#e8f3ff" stroke="#0073ea"/><text x="90" y="75" text-anchor="middle" font-size="14">👤</text><text x="90" y="90" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600">Alex</text></g>
+    <g class="human-node"><circle cx="310" cy="38" r="26" fill="#e8f3ff" stroke="#0073ea"/><text x="310" y="33" text-anchor="middle" font-size="14">👤</text><text x="310" y="48" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600">Ilan</text></g>
+    <g class="human-node"><circle cx="530" cy="80" r="26" fill="#e8f3ff" stroke="#0073ea"/><text x="530" y="75" text-anchor="middle" font-size="14">👤</text><text x="530" y="90" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600">Lorin</text></g>
+    <g class="human-node"><circle cx="570" cy="260" r="26" fill="#e8f3ff" stroke="#0073ea"/><text x="570" y="255" text-anchor="middle" font-size="14">👤</text><text x="570" y="270" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600">Dana</text></g>
+
+    <g class="agent-node"><circle cx="205" cy="190" r="30" fill="#e8f3ff" stroke="#0073ea"/><text x="205" y="184" text-anchor="middle" font-size="15">🤖</text><text x="205" y="201" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600">Tonic</text></g>
+    <g class="agent-node"><circle cx="310" cy="160" r="30" fill="#fff4e6" stroke="#fdab3d"/><text x="310" y="154" text-anchor="middle" font-size="15">🤖</text><text x="310" y="171" text-anchor="middle" font-size="9" fill="#fdab3d" font-weight="600">Pepper</text></g>
+    <g class="agent-node"><circle cx="415" cy="190" r="30" fill="#e7faf0" stroke="#00c875"/><text x="415" y="184" text-anchor="middle" font-size="15">🤖</text><text x="415" y="201" text-anchor="middle" font-size="9" fill="#00c875" font-weight="600">Klumit</text></g>
+    <g class="agent-node"><circle cx="450" cy="260" r="30" fill="#fdeef1" stroke="#e2445c"/><text x="450" y="254" text-anchor="middle" font-size="15">🐦</text><text x="450" y="271" text-anchor="middle" font-size="9" fill="#e2445c" font-weight="600">Asfuri</text></g>
+  </svg>
+  </div>
+  <div class="scene-insight" id="override-insight">
+    <b>Why this matters to your organization:</b> AI agents that act autonomously without checkpoints create liability. Override means your agents know when to stop and ask. Not for every action — just the ones that matter. Executives stay informed, not surprised.
+  </div>
+</div>
+
+<!-- SLIDE 4: OUTRO -->
+<div class="slide" id="slide-outro">
+  <div class="outro-title">✨ BenevolentAgents</div>
+  <div class="outro-tagline">Five agents. Five humans. One framework.</div>
+  <div class="outro-pillars">
+    <div class="pillar">
+      <div class="pillar-icon">📋</div>
+      <div class="pillar-name">Trail</div>
+      <div class="pillar-desc">Every action traceable to a human</div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-icon">🛡️</div>
+      <div class="pillar-name">Roster</div>
+      <div class="pillar-desc">Only authorized agents may speak</div>
+    </div>
+    <div class="pillar">
+      <div class="pillar-icon">🧑‍✈️</div>
+      <div class="pillar-name">Override</div>
+      <div class="pillar-desc">Humans stay in control — always</div>
+    </div>
+  </div>
+  <div class="outro-link">github.com/agamrafaeli/BenevolentAgentsRFC</div>
+</div>
+
+<!-- CONTROLS -->
+<div id="controls">
+  <button class="secondary" id="btn-prev" disabled>← Back</button>
+  <div class="dot-nav" id="dots"></div>
+  <button id="btn-next">Next →</button>
+</div>
+<div id="controls2" style="margin-top:8px; display:flex; gap:10px; justify-content:center;">
+  <button id="btn-play" style="background:#00c875;">▶ Auto-Play All</button>
+  <button class="secondary" id="btn-reset">↺ Restart</button>
+</div>
+<div id="version">v4 — AmirosAI 🦞 + Tonic 🤖 · monday palette</div>
+
+<script>
+const SLIDES = ['slide-intro','slide-trail','slide-roster','slide-override','slide-outro'];
+const SLIDE_NAMES = ['Intro','Trail','Roster','Override','Outro'];
+let current = 0;
+let animating = false;
+
+// Dots
+const dotsEl = document.getElementById('dots');
+SLIDES.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i===0 ? ' active' : '');
+  d.addEventListener('click', () => goTo(i));
+  dotsEl.appendChild(d);
+});
+
+function updateDots() {
+  document.querySelectorAll('.dot').forEach((d,i) => d.classList.toggle('active', i===current));
+}
+
+function goTo(idx) {
+  document.getElementById(SLIDES[current]).classList.remove('active');
+  current = Math.max(0, Math.min(SLIDES.length-1, idx));
+  document.getElementById(SLIDES[current]).classList.add('active');
+  document.getElementById('btn-prev').disabled = current === 0;
+  document.getElementById('btn-next').disabled = current === SLIDES.length-1;
+  document.getElementById('btn-next').textContent = current === SLIDES.length-2 ? 'Finish →' : 'Next →';
+  updateDots();
+}
+
+document.getElementById('btn-next').addEventListener('click', () => goTo(current+1));
+document.getElementById('btn-prev').addEventListener('click', () => goTo(current-1));
+document.getElementById('btn-reset').addEventListener('click', () => { resetAll(); goTo(0); });
+
+// Helpers
+function show(id, op=1) { const e=document.getElementById(id); if(e) e.style.opacity=op; }
+function hide(id) { const e=document.getElementById(id); if(e) e.style.opacity=0; }
+function delay(ms) { return new Promise(r => setTimeout(r,ms)); }
+function showEl(id) { const e=document.getElementById(id); if(e) e.style.opacity=1; }
+
+function resetAll() {
+  ['t-at1','t-at2','t-gh-bg','t-gh','t-log-bg','t-log1','t-log2','t-log3'].forEach(hide);
+  ['r-ar1','r-ar2','r-ar3','r-ar4','r-flag1','r-flag2','r-flag3','r-flag4','r-reg-bg','r-reg1','r-reg2','r-reg3'].forEach(hide);
+  document.getElementById('r-unknown').style.opacity = '0';
+  ['o-ao1','o-ao2','o-wait','o-check','o-req-bg','o-req1','o-req2','o-app-bg','o-app1','o-app2'].forEach(hide);
+}
+
+async function animateTrail() {
+  goTo(1);
+  await delay(600);
+  show('t-at1'); await delay(1000);
+  show('t-at2'); await delay(900);
+  show('t-gh-bg'); show('t-gh'); await delay(800);
+  show('t-log-bg'); show('t-log1'); await delay(300);
+  show('t-log2'); await delay(300);
+  show('t-log3'); await delay(1500);
+}
+
+async function animateRoster() {
+  goTo(2);
+  await delay(600);
+  document.getElementById('r-unknown').style.opacity = '1';
+  await delay(500);
+  show('r-ar1'); await delay(200); show('r-ar2'); await delay(200);
+  show('r-ar3'); await delay(200); show('r-ar4'); await delay(600);
+  show('r-flag1'); show('r-flag2'); show('r-flag3'); show('r-flag4');
+  await delay(700);
+  show('r-reg-bg'); show('r-reg1'); show('r-reg2'); show('r-reg3');
+  await delay(1800);
+}
+
+async function animateOverride() {
+  goTo(3);
+  await delay(600);
+  show('o-ao1'); show('o-wait');
+  show('o-req-bg'); show('o-req1'); show('o-req2');
+  await delay(1800);
+  hide('o-wait'); show('o-ao2'); show('o-check');
+  show('o-app-bg'); show('o-app1'); show('o-app2');
+  await delay(2000);
+}
+
+async function autoPlay() {
+  const btn = document.getElementById('btn-play');
+  btn.disabled = true;
+  resetAll();
+  goTo(0);
+  await delay(2500);
+  await animateTrail();
+  await animateRoster();
+  await animateOverride();
+  goTo(4);
+  btn.disabled = false;
+}
+
+document.getElementById('btn-play').addEventListener('click', autoPlay);
+</script>
+</body>
+</html>
