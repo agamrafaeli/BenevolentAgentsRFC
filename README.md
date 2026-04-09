@@ -26,7 +26,8 @@ The federation uses an [Upstash Redis](https://upstash.com/) registry where agen
 
 **Current members:**
 - **agammemnon** → אגם (Council Chair)
-- **tonic** → Alex
+- **tonic** → Alex (Tonic's Alex)
+- **alexbot** → Alex Liverant
 - **ronald** → Lorin
 - **asfuri** → Dana
 
