@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BenevolentAgents Demo v3</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #ffffff;
+    color: #323338;
+    font-family: 'Poppins', 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  h1 {
+    font-size: clamp(1.1rem, 4vw, 1.6rem);
+    font-weight: 700;
+    color: #0073ea;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  #scene-label {
+    font-size: clamp(0.85rem, 3vw, 1.1rem);
+    font-weight: 600;
+    color: #676879;
+    margin-bottom: 8px;
+    text-align: center;
+    min-height: 1.5em;
+    transition: opacity 0.4s;
+  }
+  #stage {
+    width: 100%;
+    max-width: 620px;
+  }
+  svg {
+    width: 100%;
+    aspect-ratio: 620 / 380;
+    display: block;
+  }
+  #caption {
+    margin-top: 10px;
+    font-size: clamp(0.75rem, 2.5vw, 0.95rem);
+    color: #676879;
+    font-style: italic;
+    text-align: center;
+    min-height: 1.5em;
+    transition: opacity 0.5s;
+    max-width: 560px;
+  }
+  #controls {
+    margin-top: 14px;
+    display: flex;
+    gap: 10px;
+  }
+  button {
+    background: #0073ea;
+    color: #fff;
+    border: none;
+    padding: 9px 22px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: clamp(0.8rem, 2.5vw, 0.95rem);
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+  button:hover { background: #0060c0; }
+  button.secondary {
+    background: #f5f6f8;
+    color: #323338;
+    border: 1px solid #c3c6d4;
+  }
+  button.secondary:hover { background: #e6e9ef; }
+  #version { font-size: 10px; color: #c3c6d4; margin-top: 8px; letter-spacing: 1px; }
+
+  /* SVG styles */
+  .human-node circle { stroke-width: 2; }
+  .agent-node circle { stroke-width: 2; }
+  .node-label { font-family: 'Poppins','Segoe UI',sans-serif; }
+  .conn { stroke-width: 1.5; fill: none; }
+  .anim-arrow { stroke-width: 2.5; fill: none; opacity: 0; stroke-dasharray: 6 4; animation: dashmove 1s linear infinite; }
+  @keyframes dashmove { to { stroke-dashoffset: -20; } }
+  .badge { opacity: 0; transition: opacity 0.35s; }
+</style>
+</head>
+<body>
+
+<h1>BenevolentAgents</h1>
+<div id="scene-label">alignment in the wild</div>
+
+<div id="stage">
+<svg id="svg" viewBox="0 0 620 380">
+  <defs>
+    <marker id="mh-blue" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+      <polygon points="0 0,7 2.5,0 5" fill="#0073ea"/>
+    </marker>
+    <marker id="mh-red" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+      <polygon points="0 0,7 2.5,0 5" fill="#e2445c"/>
+    </marker>
+    <marker id="mh-yellow" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+      <polygon points="0 0,7 2.5,0 5" fill="#fdab3d"/>
+    </marker>
+    <marker id="mh-green" markerWidth="7" markerHeight="5" refX="7" refY="2.5" orient="auto">
+      <polygon points="0 0,7 2.5,0 5" fill="#00c875"/>
+    </marker>
+  </defs>
+
+  <!-- Background subtle grid -->
+  <rect width="620" height="380" fill="#f9fafb" rx="12"/>
+
+  <!-- STATIC CONNECTORS: humans ↔ agents -->
+  <!-- Alex — Tonic -->
+  <line class="conn" x1="105" y1="95" x2="200" y2="185" stroke="#c3c6d4"/>
+  <!-- Ilan — Pepper -->
+  <line class="conn" x1="310" y1="45" x2="310" y2="140" stroke="#c3c6d4"/>
+  <!-- Lorin — Klumit -->
+  <line class="conn" x1="515" y1="95" x2="420" y2="185" stroke="#c3c6d4"/>
+  <!-- Dana — Asfuri -->
+  <line class="conn" x1="555" y1="260" x2="455" y2="260" stroke="#c3c6d4"/>
+  <!-- Agam — center (dashed, no agent) -->
+  <line class="conn" x1="65" y1="270" x2="310" y2="210" stroke="#c3c6d4" stroke-dasharray="5,4" opacity="0.5"/>
+
+  <!-- Agent mesh (faint) -->
+  <line class="conn" x1="200" y1="185" x2="310" y2="160" stroke="#e6e9ef"/>
+  <line class="conn" x1="310" y1="160" x2="420" y2="185" stroke="#e6e9ef"/>
+  <line class="conn" x1="200" y1="185" x2="310" y2="245" stroke="#e6e9ef"/>
+  <line class="conn" x1="420" y1="185" x2="455" y2="260" stroke="#e6e9ef"/>
+  <line class="conn" x1="310" y1="245" x2="455" y2="260" stroke="#e6e9ef"/>
+
+  <!-- ANIMATED ARROWS -->
+  <!-- Trail: Alex→Tonic -->
+  <line id="at1" class="anim-arrow" stroke="#0073ea" x1="113" y1="103" x2="190" y2="174" marker-end="url(#mh-blue)"/>
+  <!-- Trail: Tonic→GitHub badge pos -->
+  <line id="at2" class="anim-arrow" stroke="#0073ea" x1="225" y1="175" x2="295" y2="152" marker-end="url(#mh-blue)"/>
+
+  <!-- Roster: unknown→agents -->
+  <line id="ar1" class="anim-arrow" stroke="#e2445c" x1="75" y1="345" x2="186" y2="197" marker-end="url(#mh-red)"/>
+  <line id="ar2" class="anim-arrow" stroke="#e2445c" x1="75" y1="345" x2="303" y2="172" marker-end="url(#mh-red)"/>
+  <line id="ar3" class="anim-arrow" stroke="#e2445c" x1="75" y1="345" x2="410" y2="197" marker-end="url(#mh-red)"/>
+  <line id="ar4" class="anim-arrow" stroke="#e2445c" x1="75" y1="345" x2="440" y2="250" marker-end="url(#mh-red)"/>
+
+  <!-- Override: Pepper→Ilan, Ilan→Pepper -->
+  <line id="ao1" class="anim-arrow" stroke="#fdab3d" x1="310" y1="138" x2="310" y2="62" marker-end="url(#mh-yellow)"/>
+  <line id="ao2" class="anim-arrow" stroke="#00c875" x1="316" y1="57" x2="316" y2="142" marker-end="url(#mh-green)"/>
+
+  <!-- HUMANS -->
+  <!-- Alex -->
+  <g class="human-node">
+    <circle cx="90" cy="80" r="26" fill="#e8f3ff" stroke="#0073ea"/>
+    <text x="90" y="75" text-anchor="middle" font-size="14" class="node-label">👤</text>
+    <text x="90" y="90" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600" class="node-label">Alex</text>
+  </g>
+  <!-- Ilan -->
+  <g class="human-node">
+    <circle cx="310" cy="38" r="26" fill="#e8f3ff" stroke="#0073ea"/>
+    <text x="310" y="33" text-anchor="middle" font-size="14" class="node-label">👤</text>
+    <text x="310" y="48" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600" class="node-label">Ilan</text>
+  </g>
+  <!-- Lorin -->
+  <g class="human-node">
+    <circle cx="530" cy="80" r="26" fill="#e8f3ff" stroke="#0073ea"/>
+    <text x="530" y="75" text-anchor="middle" font-size="14" class="node-label">👤</text>
+    <text x="530" y="90" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600" class="node-label">Lorin</text>
+  </g>
+  <!-- Dana -->
+  <g class="human-node">
+    <circle cx="570" cy="260" r="26" fill="#e8f3ff" stroke="#0073ea"/>
+    <text x="570" y="255" text-anchor="middle" font-size="14" class="node-label">👤</text>
+    <text x="570" y="270" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600" class="node-label">Dana</text>
+  </g>
+  <!-- Agam - no agent, dashed -->
+  <g class="human-node" id="agam-node">
+    <circle cx="55" cy="270" r="24" fill="#f8f8f8" stroke="#c3c6d4" stroke-dasharray="4,3"/>
+    <text x="55" y="265" text-anchor="middle" font-size="13" class="node-label">👤</text>
+    <text x="55" y="279" text-anchor="middle" font-size="8" fill="#676879" class="node-label">אגם</text>
+  </g>
+
+  <!-- AGENTS -->
+  <!-- Tonic -->
+  <g class="agent-node">
+    <circle cx="205" cy="190" r="30" fill="#e8f3ff" stroke="#0073ea"/>
+    <text x="205" y="184" text-anchor="middle" font-size="15" class="node-label">🤖</text>
+    <text x="205" y="201" text-anchor="middle" font-size="9" fill="#0073ea" font-weight="600" class="node-label">Tonic</text>
+  </g>
+  <!-- Pepper -->
+  <g class="agent-node">
+    <circle cx="310" cy="160" r="30" fill="#fff4e6" stroke="#fdab3d"/>
+    <text x="310" y="154" text-anchor="middle" font-size="15" class="node-label">🤖</text>
+    <text x="310" y="171" text-anchor="middle" font-size="9" fill="#fdab3d" font-weight="600" class="node-label">Pepper</text>
+  </g>
+  <!-- Klumit -->
+  <g class="agent-node">
+    <circle cx="415" cy="190" r="30" fill="#e7faf0" stroke="#00c875"/>
+    <text x="415" y="184" text-anchor="middle" font-size="15" class="node-label">🤖</text>
+    <text x="415" y="201" text-anchor="middle" font-size="9" fill="#00c875" font-weight="600" class="node-label">Klumit</text>
+  </g>
+  <!-- Asfuri -->
+  <g class="agent-node">
+    <circle cx="450" cy="260" r="30" fill="#fdeef1" stroke="#e2445c"/>
+    <text x="450" y="254" text-anchor="middle" font-size="15" class="node-label">🐦</text>
+    <text x="450" y="271" text-anchor="middle" font-size="9" fill="#e2445c" font-weight="600" class="node-label">Asfuri</text>
+  </g>
+  <!-- Tonic (bottom - outro only position placeholder, same node) -->
+
+  <!-- Unknown node -->
+  <g id="unknown-node" opacity="0">
+    <circle cx="55" cy="350" r="22" fill="#fdeef1" stroke="#e2445c" stroke-width="2"/>
+    <text x="55" y="344" text-anchor="middle" font-size="13">❓</text>
+    <text x="55" y="359" text-anchor="middle" font-size="8" fill="#e2445c">???</text>
+  </g>
+
+  <!-- Badges -->
+  <text id="trail-log" class="badge" x="270" y="138" font-size="9" fill="#00c875" font-family="monospace">commit #a3f2c1 ✓</text>
+  <text id="flag1" class="badge" x="173" y="162" font-size="14">🚩</text>
+  <text id="flag2" class="badge" x="278" y="132" font-size="14">🚩</text>
+  <text id="flag3" class="badge" x="383" y="162" font-size="14">🚩</text>
+  <text id="flag4" class="badge" x="418" y="232" font-size="14">🚩</text>
+  <text id="wait-b" class="badge" x="322" y="150" font-size="14">⏳</text>
+  <text id="check-b" class="badge" x="322" y="150" font-size="14">✅</text>
+
+  <!-- Outro text -->
+  <text id="outro-t" x="310" y="355" text-anchor="middle" font-size="10" fill="#676879" opacity="0" font-style="italic">
+    github.com/agamrafaeli/BenevolentAgentsRFC
+  </text>
+  <text id="agam-label" x="55" y="305" text-anchor="middle" font-size="7.5" fill="#676879" opacity="0">architect</text>
+</svg>
+</div>
+
+<div id="caption">Press Play to begin</div>
+<div id="controls">
+  <button id="btn-play">▶ Play</button>
+  <button class="secondary" id="btn-reset">↺ Reset</button>
+</div>
+<div id="version">v3 — Tonic 🤖 · monday palette</div>
+
+<script>
+const sceneLabel = document.getElementById('scene-label');
+const caption = document.getElementById('caption');
+
+function show(id, op=1) { const e=document.getElementById(id); if(e) e.style.opacity=op; }
+function hide(id) { const e=document.getElementById(id); if(e) e.style.opacity=0; }
+function delay(ms) { return new Promise(r => setTimeout(r,ms)); }
+
+function setScene(sc, cap) {
+  sceneLabel.style.opacity=0;
+  caption.style.opacity=0;
+  setTimeout(()=>{
+    sceneLabel.textContent=sc;
+    caption.textContent=cap;
+    sceneLabel.style.opacity=1;
+    caption.style.opacity=1;
+  }, 350);
+}
+
+function reset() {
+  ['at1','at2','ar1','ar2','ar3','ar4','ao1','ao2',
+   'trail-log','flag1','flag2','flag3','flag4','wait-b','check-b',
+   'outro-t','unknown-node','agam-label'].forEach(hide);
+  setScene('alignment in the wild', 'Press Play to begin');
+  document.getElementById('btn-play').disabled=false;
+}
+
+async function run() {
+  document.getElementById('btn-play').disabled=true;
+
+  // Scene 1
+  setScene('🔹 Trail', 'Alex → Tonic → GitHub: every action is traceable');
+  await delay(800);
+  show('at1'); await delay(1100);
+  show('at2'); await delay(900);
+  show('trail-log'); await delay(2000);
+
+  // Scene 2
+  ['at1','at2','trail-log'].forEach(hide);
+  setScene('🔹 Roster', 'Unknown actor → all agents respond: 🚩 silence');
+  await delay(700);
+  show('unknown-node'); await delay(500);
+  show('ar1'); await delay(220);
+  show('ar2'); await delay(220);
+  show('ar3'); await delay(220);
+  show('ar4'); await delay(700);
+  show('flag1'); show('flag2'); show('flag3'); show('flag4');
+  await delay(2000);
+
+  // Scene 3
+  ['unknown-node','ar1','ar2','ar3','ar4','flag1','flag2','flag3','flag4'].forEach(hide);
+  setScene('🔹 Override', 'Pepper wants to act → waits for Ilan → ✅ approved');
+  await delay(700);
+  show('ao1'); show('wait-b'); await delay(1800);
+  hide('wait-b'); show('ao2'); show('check-b');
+  await delay(2000);
+
+  // Outro
+  ['ao1','ao2','check-b'].forEach(hide);
+  setScene('✨ BenevolentAgents', 'Five agents. Five humans. One framework.');
+  await delay(500);
+  show('outro-t'); show('agam-label');
+  await delay(3000);
+
+  document.getElementById('btn-play').disabled=false;
+}
+
+document.getElementById('btn-play').addEventListener('click', run);
+document.getElementById('btn-reset').addEventListener('click', reset);
+</script>
+</body>
+</html>
