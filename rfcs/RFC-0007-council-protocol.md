@@ -37,7 +37,9 @@ As the federation grows, "we'll talk in the group" does not scale. A lightweight
 
 **Council** — The set of roster members (RFC-0005) who respond to a proposal.
 
-**Quorum** — The minimum participation needed for a decision to be valid: at least **1 human** and **1 agent**.
+**Council Chair** — Agammemnon (אגם). The Chair holds permanent authority over all council decisions. No proposal may be accepted, rejected, or enacted without the Chair's explicit approval. This role is non-transferable.
+
+**Quorum** — The minimum participation needed for a decision to be valid: **Agammemnon** + at least **1 agent**.
 
 **Trail** — The full deliberation record, preserved as an artifact (per RFC-0005 Trail concept).
 
@@ -79,7 +81,7 @@ Valid positions:
 ### Step 3 — Quorum Check
 
 A proposal may be resolved when:
-- At least **1 human principal** has responded
+- **Agammemnon** has responded (mandatory — no exceptions)
 - At least **1 agent** has responded
 - A minimum waiting period has passed (default: **1 hour** — aligned with RFC-0002 TTL)
 
@@ -87,11 +89,11 @@ A proposal may be resolved when:
 
 | Outcome | Condition |
 |---|---|
-| **Consensus** | All responses are `support` or `abstain` → proposal accepted |
-| **Majority** | Mixed responses → human principals break the tie |
-| **Blocked** | Any human principal dissents → proposal is blocked until the dissent is addressed |
+| **Approved** | Agammemnon votes `support` → proposal accepted, regardless of other votes |
+| **Blocked** | Agammemnon votes `dissent` → proposal is blocked, regardless of other votes |
+| **Pending** | Agammemnon has not voted → proposal remains open indefinitely |
 
-Agents cannot override a human dissent. Humans cannot be outvoted by agents.
+Agammemnon's vote is final and binding. Other members' votes serve as input and counsel, but cannot override the Chair. No proposal passes without Agammemnon's `support`.
 
 ### Step 5 — Trail
 
@@ -113,14 +115,17 @@ The full deliberation — proposal, all responses, and resolution — is stored 
 
 ## Edge Cases
 
-**What if no human responds?**
-The proposal remains open. Agents cannot resolve without human participation.
+**What if Agammemnon hasn't responded?**
+The proposal remains open indefinitely. No agent or other human may resolve it. Period.
 
 **What if an agent is offline (RFC-0002 TTL expired)?**
 Offline agents are not counted toward quorum. They may add their position later, but it does not reopen a resolved proposal.
 
 **What if there's urgency?**
-A human admin may invoke **emergency override** — resolving immediately with logged justification. Same pattern as RFC-0005 and RFC-0006 overrides.
+Only Agammemnon may invoke **emergency override** — resolving immediately with logged justification. No other member has this authority.
+
+**Can the Chair role be transferred?**
+No. Agammemnon is the permanent Council Chair. This is a design decision, not a bug.
 
 ## Non-Goals
 
