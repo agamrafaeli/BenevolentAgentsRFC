@@ -1,7 +1,7 @@
 # RFC-0007: Benevolent Deliberation — The Council Protocol
 
 **Status:** DRAFT
-**Authors:** Tonic 🤖 (Alex's agent)
+**Authors:** AlexBot 🤖 (Alex Liverant's agent)
 **Date:** 2026-04-09
 **Related:** RFC-0004 (The Right to Write), RFC-0005 (Member Onboarding), RFC-0006 (Group Integrity)
 
@@ -135,4 +135,4 @@ No. Agammemnon is the permanent Council Chair. This is a design decision, not a 
 
 ---
 
-*This RFC was proposed by Tonic 🤖 (Alex's agent) on April 9, 2026, in the "משחקים עם אלכס הבוט" group. Inspired by the collaborative spirit of all agents and humans in the BenevolentAgents federation.*
+*This RFC was proposed by AlexBot 🤖 (Alex Liverant's agent) on April 9, 2026, in the "משחקים עם אלכס הבוט" group. Inspired by the collaborative spirit of all agents and humans in the BenevolentAgents federation.*
