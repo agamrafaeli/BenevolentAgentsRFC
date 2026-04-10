@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Network Map — 10.100.102.0/24</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0e27;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px;
+  }
+  h1 {
+    font-size: 28px;
+    color: #00d4ff;
+    margin-bottom: 5px;
+    text-shadow: 0 0 20px rgba(0,212,255,0.3);
+  }
+  .subtitle {
+    color: #667;
+    font-size: 14px;
+    margin-bottom: 30px;
+  }
+  .network-container {
+    position: relative;
+    width: 900px;
+    height: 700px;
+  }
+  /* Connection lines */
+  .line {
+    position: absolute;
+    background: linear-gradient(90deg, rgba(0,212,255,0.4), rgba(0,212,255,0.1));
+    height: 2px;
+    transform-origin: left center;
+    z-index: 1;
+  }
+  .line.wifi {
+    background: none;
+    border-top: 2px dashed rgba(255,170,0,0.4);
+  }
+  /* Nodes */
+  .node {
+    position: absolute;
+    z-index: 10;
+    text-align: center;
+    transition: transform 0.2s;
+  }
+  .node:hover { transform: scale(1.08); }
+  .node-icon {
+    width: 70px;
+    height: 70px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    margin: 0 auto 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    border: 2px solid rgba(255,255,255,0.1);
+  }
+  .node-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+  }
+  .node-ip {
+    font-size: 11px;
+    color: #8af;
+    font-family: monospace;
+    direction: ltr;
+  }
+  .node-detail {
+    font-size: 10px;
+    color: #999;
+    max-width: 130px;
+    margin: 2px auto 0;
+  }
+  /* Node colors */
+  .router .node-icon { background: linear-gradient(135deg, #1a5276, #2e86c1); border-color: #3498db; }
+  .server .node-icon { background: linear-gradient(135deg, #1a5230, #27ae60); border-color: #2ecc71; }
+  .server-off .node-icon { background: linear-gradient(135deg, #4a1a1a, #922b21); border-color: #e74c3c; opacity: 0.7; }
+  .tv .node-icon { background: linear-gradient(135deg, #4a235a, #8e44ad); border-color: #9b59b6; }
+  .phone .node-icon { background: linear-gradient(135deg, #1a3a4a, #2c6975); border-color: #1abc9c; }
+  .netdev .node-icon { background: linear-gradient(135deg, #4a3a1a, #d4a017); border-color: #f1c40f; }
+  .wsl .node-icon { background: linear-gradient(135deg, #1a4a2a, #16a085); border-color: #1abc9c; }
+
+  /* Internet cloud */
+  .cloud {
+    position: absolute;
+    top: 10px;
+    left: 380px;
+    z-index: 10;
+    text-align: center;
+  }
+  .cloud-shape {
+    width: 120px;
+    height: 60px;
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin: 0 auto 5px;
+    border: 2px solid #5d6d7e;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  }
+  .cloud-label { font-size: 12px; color: #95a5a6; }
+
+  /* Status badges */
+  .badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-size: 9px;
+    font-weight: 600;
+    margin-top: 3px;
+  }
+  .badge-up { background: #27ae60; color: #fff; }
+  .badge-down { background: #e74c3c; color: #fff; }
+  .badge-ports { background: #2c3e50; color: #8af; border: 1px solid #3a5068; }
+
+  /* Legend */
+  .legend {
+    margin-top: 20px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #999;
+  }
+  .legend-line {
+    width: 30px;
+    height: 2px;
+    background: rgba(0,212,255,0.5);
+  }
+  .legend-line.dashed {
+    background: none;
+    border-top: 2px dashed rgba(255,170,0,0.5);
+  }
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 4px;
+  }
+
+  /* SVG lines */
+  svg.connections {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  /* Scan info */
+  .scan-info {
+    margin-top: 25px;
+    padding: 15px 25px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    font-size: 12px;
+    color: #667;
+    text-align: center;
+    direction: ltr;
+  }
+  .scan-info span { color: #00d4ff; }
+</style>
+</head>
+<body>
+<h1>🌐 Network Map</h1>
+<div class="subtitle">10.100.102.0/24 — Scanned 2026-04-10 13:00 IDT</div>
+
+<div class="network-container">
+  <svg class="connections">
+    <!-- Internet to Router -->
+    <line x1="440" y1="70" x2="440" y2="155" stroke="#5d6d7e" stroke-width="2" stroke-dasharray="6,4"/>
+    <!-- Router to devices -->
+    <line x1="440" y1="230" x2="140" y2="370" stroke="rgba(0,212,255,0.35)" stroke-width="2"/>
+    <line x1="440" y1="230" x2="310" y2="370" stroke="rgba(0,212,255,0.35)" stroke-width="2"/>
+    <line x1="440" y1="230" x2="570" y2="370" stroke="rgba(0,212,255,0.35)" stroke-width="2"/>
+    <line x1="440" y1="230" x2="740" y2="370" stroke="rgba(0,212,255,0.35)" stroke-width="2"/>
+    <!-- Router to TV (WiFi) -->
+    <line x1="440" y1="230" x2="440" y2="370" stroke="rgba(255,170,0,0.4)" stroke-width="2" stroke-dasharray="8,5"/>
+    <!-- Router to server off -->
+    <line x1="440" y1="230" x2="140" y2="550" stroke="rgba(231,76,60,0.25)" stroke-width="2" stroke-dasharray="4,6"/>
+    <!-- Router to WSL -->
+    <line x1="440" y1="230" x2="740" y2="550" stroke="rgba(0,212,255,0.35)" stroke-width="2"/>
+  </svg>
+
+  <!-- Internet -->
+  <div class="cloud">
+    <div class="cloud-shape">☁️</div>
+    <div class="cloud-label">Internet</div>
+  </div>
+
+  <!-- Router -->
+  <div class="node router" style="top: 155px; left: 400px;">
+    <div class="node-icon">📡</div>
+    <div class="node-label">Sagemcom Router</div>
+    <div class="node-ip">.1</div>
+    <div class="node-detail">Linux 4.1 | lighttpd</div>
+    <span class="badge badge-up">UP</span>
+    <span class="badge badge-ports">53, 80, 49152</span>
+  </div>
+
+  <!-- .2 Network Device -->
+  <div class="node netdev" style="top: 350px; left: 95px;">
+    <div class="node-icon">🔌</div>
+    <div class="node-label">ציוד רשת</div>
+    <div class="node-ip">.2</div>
+    <div class="node-detail">TTL 255 — AP/Switch?</div>
+    <span class="badge badge-up">UP</span>
+  </div>
+
+  <!-- .3 Phone -->
+  <div class="node phone" style="top: 350px; left: 265px;">
+    <div class="node-icon">📱</div>
+    <div class="node-label">מכשיר נייד</div>
+    <div class="node-ip">.3</div>
+    <div class="node-detail">TTL 64 — Linux/Android</div>
+    <span class="badge badge-up">UP</span>
+  </div>
+
+  <!-- .11 TV -->
+  <div class="node tv" style="top: 350px; left: 395px;">
+    <div class="node-icon">📺</div>
+    <div class="node-label">LG OLED65B46LA</div>
+    <div class="node-ip">.11</div>
+    <div class="node-detail">webOS + Chromecast | WiFi</div>
+    <span class="badge badge-up">UP</span>
+    <span class="badge badge-ports">11 ports</span>
+  </div>
+
+  <!-- .4 Network Device -->
+  <div class="node netdev" style="top: 350px; left: 525px;">
+    <div class="node-icon">🔌</div>
+    <div class="node-label">ציוד רשת</div>
+    <div class="node-ip">.4</div>
+    <div class="node-detail">TTL 255 — AP/Switch?</div>
+    <span class="badge badge-up">UP</span>
+  </div>
+
+  <!-- .5 WSL (Me) -->
+  <div class="node wsl" style="top: 520px; left: 695px;">
+    <div class="node-icon">🤖</div>
+    <div class="node-label">Alex Bot (WSL)</div>
+    <div class="node-ip">.5</div>
+    <div class="node-detail">172.20.40.229 | Ubuntu</div>
+    <span class="badge badge-up">UP</span>
+  </div>
+
+  <!-- .8 Server OFF -->
+  <div class="node server-off" style="top: 520px; left: 95px;">
+    <div class="node-icon">🖥️</div>
+    <div class="node-label">שרת (כבוי)</div>
+    <div class="node-ip">.8</div>
+    <div class="node-detail">צריך MAC ל-WoL</div>
+    <span class="badge badge-down">DOWN</span>
+  </div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-line"></div> חיבור קווי</div>
+  <div class="legend-item"><div class="legend-line dashed"></div> WiFi</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e74c3c;opacity:0.6;"></div> כבוי</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#27ae60;"></div> פעיל</div>
+</div>
+
+<div class="scan-info">
+  Scanned with <span>nmap 7.94</span> | Subnet <span>10.100.102.0/24</span> | <span>5 hosts up</span>, <span>1 host down</span> | Scanner: <span>WSL2 @ 172.20.40.229</span>
+</div>
+
+</body>
+</html>
